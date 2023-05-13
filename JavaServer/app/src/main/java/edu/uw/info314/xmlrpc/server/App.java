@@ -13,13 +13,14 @@ import javax.xml.transform.*;
 import javax.xml.transform.dom.*;
 import javax.xml.transform.stream.*;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 
 class Call {
     public String name;
     public List<Object> args = new ArrayList<Object>();
 
-    public Call(String setName, List<Objects> setArgs){
+    public Call(String setName, List<Object> setArgs){
         name = setName;
         args = setArgs;
     }
@@ -44,12 +45,13 @@ public class App {
         port(8080);
         before((request, response) -> {
             if (!request.requestMethod().equals("POST")) {
-=               halt(405, "Only POST Request allowed");
+                halt(405, "Only POST Request allowed");
             }
         });
 
         notFound((request, response) -> {
             halt(404, "URL not found");
+            return "404 Not Found";
         });
 
         // This is the mapping for POST requests to "/RPC";
@@ -69,10 +71,10 @@ public class App {
             if(doc.getElementsByTagName("i4").getLength() == 0) {
                 return buildFault("3", "Illegal Argument Exception");
             }
-            Call call = extractXMl(request.body());
-            int[] args = int[call.getArgs.size()];
-            for(int i = 0; i < call.getArgs.size(); i++){
-                args[i] = (int) call.getArgs.get(i);
+            Call call = extractXML(request.body());
+            int[] nums = new int [call.getArgs().size()];
+            for(int i = 0; i < call.getArgs().size(); i++){
+                nums[i] = (int) call.getArgs().get(i);
             }
             Calc calc = new Calc();
 
@@ -80,39 +82,39 @@ public class App {
             if(call.getName().equals("add")) {
                 int answer = -1;
                 try {
-                    answer = add(args);
+                    answer = calc.add(nums);
                 } catch (Exception e) {
                     throw new ArithmeticException("Overflow!");
                 }
-                xmlResponse = buildXml(answer);
+                xmlResponse = buildXml("add", answer);
 
-            } else if (call.getName.equals("subtract")) {
-                int answer = subtract(args[0], args[1]);
-                xmlResponse = buildXml(answer);
+            } else if (call.getName().equals("subtract")) {
+                int answer = calc.subtract(nums[0], nums[1]);
+                xmlResponse = buildXml("subtract", answer);
 
-            } else if (call.getName.equals("multiply")) {
+            } else if (call.getName().equals("multiply")) {
                 int answer = -1;
                 try {
-                    answer = add(args);
+                    answer = calc.add(nums);
                 } catch (Exception e) {
                     throw new ArithmeticException("Overflow!");
                 }
-                xmlResponse = buildXml(answer);
+                xmlResponse = buildXml("multiply", answer);
 
-            } else if (call.getName.equals("divide")) {
-                if(args[1] == 0) {
+            } else if (call.getName().equals("divide")) {
+                if(nums[1] == 0) {
                     xmlResponse = buildFault("1", "Divide by Zero");
                 } else {
-                    int answer = divide(args[0], args[1]);
-                    xmlResponse = buildXml(answer);
+                    int answer = calc.divide(nums[0], nums[1]);
+                    xmlResponse = buildXml("divide", answer);
                 }
 
-            } else if (call.getName.equals("modulo")) {
-                if(args[1] == 0) {
+            } else if (call.getName().equals("modulo")) {
+                if(nums[1] == 0) {
                     xmlResponse = buildFault("1", "Divide by Zero");
                 } else {
-                    int answer = modulo(args[0], args[1]);
-                    xmlResponse = buildXml(answer);
+                    int answer = calc.modulo(nums[0], nums[1]);
+                    xmlResponse = buildXml("modulo", answer);
                 }
 
             }
@@ -127,7 +129,7 @@ public class App {
         // All of this is documented on the SparkJava website (https://sparkjava.com/).
     }
 
-    private static Call extractXML(String xml) {
+    private static Call extractXML(String xml) throws ParserConfigurationException, IOException, SAXException {
         String method = "";
         List<Object> items = new ArrayList<>();
 
@@ -142,7 +144,7 @@ public class App {
         NodeList tagNodes = doc.getElementsByTagName("i4");
 
         for (int i = 0; i < tagNodes.getLength(); i++ ){
-            items.add(tagNodes.item(i).getTextContext);
+            items.add(tagNodes.item(i).getTextContent());
         }
 
         Call call = new Call(method, items);
