@@ -97,12 +97,12 @@ public class Client {
         NodeList error = doc.getElementsByTagName("fault");
 
         if (error.getLength() != 0) {
-            NodeList i4 = doc.getElementsByTagName("i4");
-            NodeList errorString = doc.getElementsByTagName("string");
-            String errorCode3 = i4.item(0).getTextContent();
-            String str = errorString .item(0).getTextContent();
+            NodeList codeElement = doc.getElementsByTagName("code");
+            NodeList errorElement = doc.getElementsByTagName("error");
+            String code = codeElement.item(0).getTextContent();
+            String fault = errorElement.item(0).getTextContent();
 
-            throw new Exception("Error Code: " + errorCode3.trim() + ", Fault: " + str.trim());
+            throw new Exception("Error Code: " + code.trim() + ", Fault: " + fault.trim());
         }
 
         NodeList value = doc.getElementsByTagName("value");
