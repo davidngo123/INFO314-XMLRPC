@@ -37,6 +37,7 @@ class Call {
 public class App {
     public static final Logger LOG = Logger.getLogger(App.class.getCanonicalName());
     public static DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+    public static String xmlResponse;
 
     public static void main(String[] args) {
         LOG.info("Starting up on port 8080");
@@ -58,6 +59,16 @@ public class App {
             response.type("text/xml");
 
 
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            InputSource is = new InputSource();
+            is.setCharacterStream(new StringReader(request.body()));
+            Document doc = db.parse(is);
+
+
+            NodeList i4 = doc.getElementsByTagName("i4");
+            if(doc.getElementsByTagName("i4").getLength() == 0) {
+                return buildFault("3", "Illegal Argument Exception");
+            }
             Call call = extractXMl(request.body());
             int[] args = int[call.getArgs.size()];
             for(int i = 0; i < call.getArgs.size(); i++){
@@ -65,9 +76,14 @@ public class App {
             }
             Calc calc = new Calc();
 
-            String xmlResponse = "";
+
             if(call.getName().equals("add")) {
-                int answer = add(args);
+                int answer = -1;
+                try {
+                    answer = add(args);
+                } catch (Exception e) {
+                    throw new ArithmeticException("Overflow!");
+                }
                 xmlResponse = buildXml(answer);
 
             } else if (call.getName.equals("subtract")) {
@@ -75,7 +91,12 @@ public class App {
                 xmlResponse = buildXml(answer);
 
             } else if (call.getName.equals("multiply")) {
-                int answer = multiply(args);
+                int answer = -1;
+                try {
+                    answer = add(args);
+                } catch (Exception e) {
+                    throw new ArithmeticException("Overflow!");
+                }
                 xmlResponse = buildXml(answer);
 
             } else if (call.getName.equals("divide")) {
@@ -109,6 +130,22 @@ public class App {
     private static Call extractXML(String xml) {
         String method = "";
         List<Object> items = new ArrayList<>();
+
+
+
+        DocumentBuilder db = dbf.newDocumentBuilder();
+        InputSource is = new InputSource();
+        is.setCharacterStream(new StringReader(xml));
+        Document doc = db.parse(is);
+
+        method  = doc.getElementsByTagName("methodName").item(0).getTextContent();
+        NodeList tagNodes = doc.getElementsByTagName("i4");
+
+        for (int i = 0; i < tagNodes.getLength(); i++ ){
+            items.add(tagNodes.item(i).getTextContext);
+        }
+
+        Call call = new Call(method, items);
 
         return call;
 
