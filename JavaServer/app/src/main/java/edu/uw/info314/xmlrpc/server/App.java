@@ -39,9 +39,6 @@ public class App {
     public static final Logger LOG = Logger.getLogger(App.class.getCanonicalName());
     public static DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
     public static String xmlResponse;
-    private static Set<String> acceptedPaths = new HashSet<>(Arrays.asList("/RPC"));
-    private static Set<String> acceptedMethods = new HashSet<>(Arrays.asList("post"));
-
     public static void main(String[] args) {
         LOG.info("Starting up on port 8080");
         port(8080);
