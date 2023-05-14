@@ -19,7 +19,8 @@ public class Client {
     public static void main(String... args) throws Exception {
         String port = args[1];
         String host = args[0];
-        url = "http://" + host + ":" + port;
+        url = "http://" + host + ":" + port + "/RPC";
+        System.out.println(url);
         System.out.println(add() == 0);
         System.out.println(add(1, 2, 3, 4, 5) == 15);
         System.out.println(add(2, 4) == 6);
@@ -74,12 +75,14 @@ public class Client {
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(url))
+                    .header("User-Agent", "localhost")
                     .POST(HttpRequest.BodyPublishers.ofString(xml))
-                    .header("Content-Type", "text/xml")
                     .build();
 
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
             body = response.body();
+            System.out.println(body);
 
         } catch(Exception e) {
             e.printStackTrace();
@@ -88,11 +91,12 @@ public class Client {
     }
 
     private static int readBody(String xml) throws Exception {
+        System.out.println(xml);
         DocumentBuilder db = dbf.newDocumentBuilder();
         InputSource is = new InputSource();
         is.setCharacterStream(new StringReader(xml));
         Document doc = db.parse(is);
-
+        System.out.println(xml);
 
         NodeList error = doc.getElementsByTagName("fault");
 

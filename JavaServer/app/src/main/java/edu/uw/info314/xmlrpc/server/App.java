@@ -39,21 +39,23 @@ public class App {
     public static final Logger LOG = Logger.getLogger(App.class.getCanonicalName());
     public static DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
     public static String xmlResponse;
+    private static Set<String> acceptedPaths = new HashSet<>(Arrays.asList("/RPC"));
+    private static Set<String> acceptedMethods = new HashSet<>(Arrays.asList("post"));
 
     public static void main(String[] args) {
         LOG.info("Starting up on port 8080");
         port(8080);
-        before((request, response) -> {
-            if (!request.requestMethod().equals("POST")) {
-                halt(405, "Only POST Request allowed");
+        before("/*", (request, response) -> {
+
+            if (!request.requestMethod().contains("POST")) {
+                halt(405, "Method not supported");
             }
         });
 
         notFound((request, response) -> {
-            halt(404, "URL not found");
+            halt(404, "URL Not Found");
             return "404 Not Found";
         });
-
         // This is the mapping for POST requests to "/RPC";
         // this is where you will want to handle incoming XML-RPC requests
         post("/RPC", (request, response) -> {
@@ -71,7 +73,7 @@ public class App {
             if(doc.getElementsByTagName("i4").getLength() == 0) {
                 return buildFault("3", "Illegal Argument Exception");
             }
-            Call call = extractXML(request.body());
+            Call call = extractXMLRPCCall(request.body());
             int[] nums = new int [call.getArgs().size()];
             for(int i = 0; i < call.getArgs().size(); i++){
                 nums[i] = (int) call.getArgs().get(i);
@@ -129,7 +131,7 @@ public class App {
         // All of this is documented on the SparkJava website (https://sparkjava.com/).
     }
 
-    private static Call extractXML(String xml) throws ParserConfigurationException, IOException, SAXException {
+    public static Call extractXMLRPCCall(String xml) throws ParserConfigurationException, IOException, SAXException {
         String method = "";
         List<Object> items = new ArrayList<>();
 
@@ -144,9 +146,9 @@ public class App {
         NodeList tagNodes = doc.getElementsByTagName("i4");
 
         for (int i = 0; i < tagNodes.getLength(); i++ ){
-            items.add(tagNodes.item(i).getTextContent());
+            items.add(Integer.parseInt(tagNodes.item(i).getTextContent()));
         }
-
+        System.out.println(items);
         Call call = new Call(method, items);
 
         return call;
