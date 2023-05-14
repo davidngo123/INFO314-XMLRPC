@@ -17,8 +17,9 @@ public class Client {
     private static String url;
 
     public static void main(String... args) throws Exception {
-        String port = args[1];
         String host = args[0];
+        String port = args[1];
+        
         url = "http://" + host + ":" + port + "/RPC";
         System.out.println(url);
         System.out.println(add() == 0);
